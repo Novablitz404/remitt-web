@@ -14,11 +14,7 @@ const RAILS: Record<"us" | "ph", { id: string; label: string }[]> = {
     { id: "cashapp", label: "Cash App" },
     { id: "zelle", label: "Zelle" },
   ],
-  ph: [
-    { id: "gcash", label: "GCash" },
-    { id: "maya", label: "Maya" },
-    { id: "coinsph", label: "Coins.ph" },
-  ],
+  ph: [{ id: "coinsph", label: "Coins.ph" }],
 };
 
 // USDC on Stellar uses 7 decimal places.

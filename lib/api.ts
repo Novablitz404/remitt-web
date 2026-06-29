@@ -9,6 +9,7 @@ export interface FeeSplit {
 
 export interface Quote {
   id: string;
+  direction: number; // 0 = USD->PHP, 1 = PHP->USD
   fiatAmountCents: number;
   usdcAmount: string;
   phpAmountCentavos: string;
@@ -48,7 +49,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function createQuote(params: {
-  fiatAmountCents: number;
+  direction: number;
+  amount: number; // source fiat minor units (USD cents or PHP centavos)
   payInRail: string;
 }): Promise<Quote> {
   return request<Quote>("/quotes", { method: "POST", body: JSON.stringify(params) });
@@ -56,8 +58,8 @@ export async function createQuote(params: {
 
 export async function createOrder(params: {
   quoteId: string;
+  senderId: string;
   recipientPhone: string;
-  payInRail: string;
 }): Promise<Order> {
   return request<Order>("/orders", { method: "POST", body: JSON.stringify(params) });
 }
