@@ -73,6 +73,41 @@ export interface LpClaim {
   reservedClaim: string;
 }
 
+export interface ProvidePosition {
+  lpId: string;
+  stellarAddress: string;
+  type: "us" | "ph";
+  paymentRails: string[];
+  totalClaim: string;
+  availableClaim: string;
+  reservedClaim: string;
+}
+
+// Wallet-first onboarding step 1: upsert the LP (country + rails) and get the
+// unsigned deposit transaction to sign.
+export async function provideLiquidityBuild(params: {
+  type: "us" | "ph";
+  stellarAddress: string;
+  paymentRails: string[];
+  amount: string; // USDC minor units
+}): Promise<{ lpId: string; stellarAddress: string; xdr: string; networkPassphrase: string }> {
+  return request("/lps/provide/build", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
+// Step 2: submit the wallet-signed deposit; returns the on-chain position.
+export async function provideLiquiditySubmit(params: {
+  stellarAddress: string;
+  signedXdr: string;
+}): Promise<ProvidePosition> {
+  return request<ProvidePosition>("/lps/provide/submit", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
 export async function getLpClaim(lpId: string): Promise<LpClaim> {
   return request<LpClaim>(`/lps/${lpId}/claim`);
 }
