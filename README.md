@@ -1,99 +1,91 @@
-# remitt-web
+# Remitt
 
-Next.js 16 frontend for the Remitt USD→PHP remittance platform. Two audiences: senders who want to send money, and liquidity providers who want to earn fees.
+A two-sided, USDC-collateralized clearing network on Stellar that bridges any two fiat payment rails for fast, atomic cross-border value transfer — remittance, commerce, payroll and B2B alike. The US↔Philippines (USD↔PHP) corridor is live as the first deployment.
 
-## Pages
+> **Repository scope:** This is the **public web frontend**. The backend API, attestation service, and Soroban smart contracts live in **private repositories**. The frontend connects to a live testnet backend, so the deployed app is fully functional for evaluation (see [Network Details](#network-details)).
 
-### `/` — Home
+## Problem
 
-Landing page with the value proposition: 1.2% all-in fee, sub-2-minute delivery, live PHP rate. Links to the send flow and LP registration.
+Cross-border payments are slow (1–3 days) and expensive (5–7% via incumbents like Western Union). This hurts more than family remittances — it blocks cross-border commerce, freelancer and contractor payroll, and B2B supplier payments across every corridor.
 
-### `/send` — Send money
+The US↔Philippines corridor is one of the largest remittance markets in the world, and Filipino workers, freelancers, and businesses lose billions annually to fees and delays. Remitt is a **currency- and use-case-agnostic** framework: a sender pays through a payment app they already use (Venmo, Cash App, Zelle, or Coins.ph), the recipient receives local fiat in seconds, and liquidity providers on both sides front the funds and settle atomically in USDC on Stellar. We launch with USD↔PHP, but the same contracts and matching engine extend to any fiat pair and any payment use case.
 
-Two-step flow:
+## How It Works
 
-1. **Get a quote** — enter USD amount and choose payment rail (Venmo, Cash App, or Zelle). Displays the locked-in PHP amount, exchange rate, and fee breakdown. Quote is valid for 10 minutes.
-2. **Place order** — enter the recipient's Coins.ph phone number and confirm. Creates the order on the backend, which matches LPs and reserves funds on-chain. Redirects to the order status page.
+**For senders (and businesses paying across borders):**
+1. Pick a direction (USD→PHP or PHP→USD) and enter an amount.
+2. Get a locked quote with a live FX rate and a transparent fee breakdown.
+3. Enter the recipient's payout handle (a Coins.ph number, or a US payment handle) and confirm.
+4. Pay through your chosen rail. The order tracker updates in real time as each leg is verified and the transfer settles on-chain — typically under two minutes.
 
-### `/send/[orderId]` — Order status
+**For liquidity providers:**
+1. Connect a Freighter wallet — the wallet *is* the identity, no separate registration.
+2. Choose your country, the payment rails you support, and how much USDC to deposit.
+3. Sign one transaction. Your deposit becomes payout capacity, usable in whichever direction the market routes you. You earn fees on every order you help settle.
 
-Real-time order tracker that polls every 4 seconds until the order reaches a terminal state.
+## How It Uses Stellar
 
-- Shows amounts, payment method, recipient phone, and fee breakdown
-- If the order is in `pool_reserved` state and no payment has been confirmed yet, shows a **pay-in confirmation form**: the sender enters their payment/transaction ID and handle. Submitting this triggers the attestation flow and on-chain `attest_pay_in`
-- Shows a success screen when the order reaches `completed`
-- Stops polling on terminal states: `completed`, `refunded`, `disputed`, `expired`
+- **Soroban smart contracts (custom):**
+  - **ClearingPool** — a two-sided USDC liquidity pool. All LPs deposit USDC regardless of country; a reserve locks collateral on *both* the funding and payout LP, settlement releases and pays out atomically once both payment legs are attested, and a refund unwinds on failure. The contract is currency-agnostic — fiat pairs and payment rails are configuration, not code.
+  - **AttestationVerifier** — verifies ed25519-signed attestations of off-chain fiat payments before on-chain settlement is permitted.
+- **USDC as a Stellar Asset Contract (SAC)** — the neutral settlement and collateral asset that bridges any two fiat currencies.
+- **Reflector oracle** — live FX rates for quotes, extensible to any pair Reflector prices.
+- **Freighter wallet** (`@stellar/freighter-api`) — non-custodial LP onboarding; deposits are signed in-browser and keys never leave the client.
+- **OpenZeppelin Stellar Channels** — parallel transaction submission via a channel-account pool, removing the single-account sequence-number bottleneck so concurrent orders settle without `txBadSeq`.
 
-### `/merchants` — LP registration
+**Why Stellar:** sub-second finality, fractions-of-a-cent fees, native USDC, on-chain FX via Reflector, and Soroban smart contracts make trustless atomic settlement across fiat rails practical in a way no other chain matches at this cost.
 
-Form for liquidity providers to register:
+## Track
 
-- **US LP**: provide Stellar address and select supported payment rails (Venmo, Cash App, Zelle)
-- **PH LP**: provide Stellar address and declare PHP payout capacity in pesos
+- **Track 1 — Remittance & Cross-Border**
+- **Track 2 — Financial Inclusion & Everyday Payments**
+- **Track 3 — DeFi, Stablecoins & Real-World Assets**
 
-On successful registration, displays the LP ID which is needed to deposit USDC and manage the LP account.
+## Tech Stack
 
-## Project structure
+- **Framework:** Next.js 16 (App Router) · React 19
+- **Stellar integration:** `@stellar/freighter-api` v6 (wallet connect + signing). Backend uses `@stellar/stellar-sdk` v14.
+- **Styling:** Tailwind CSS v4
+- **Network:** testnet
+- **Backend (private repo):** Hono · PostgreSQL · `@stellar/stellar-sdk` · OpenZeppelin Stellar Channels
 
-```
-app/
-  page.tsx              # Home/landing
-  send/
-    page.tsx            # Quote + order creation
-    [orderId]/page.tsx  # Order status + pay-in confirm
-  merchants/page.tsx    # LP registration
-  layout.tsx            # Root layout (nav, fonts)
-  globals.css           # Tailwind base styles
+## Setup & Run
 
-components/
-  FeeBreakdown.tsx      # Collapsible fee split display
-  StatusBadge.tsx       # Coloured state pill
-
-lib/
-  api.ts                # Typed fetch wrappers for backend API
-  format.ts             # formatUSD, formatPHP, STATE_DONE set
-```
-
-## Environment variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NEXT_PUBLIC_BACKEND_URL` | Yes (prod) | Backend API base URL, e.g. `https://remitt-backend.up.railway.app`. Defaults to `http://localhost:3002` in development. |
-
-Create `.env.local` for local development:
+The app talks to a live testnet backend out of the box — no local backend required to evaluate.
 
 ```bash
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3002
+git clone https://github.com/Novablitz404/remitt-web.git
+cd remitt-web
+npm install
+
+# Create .env.local with the backend URL:
+#   NEXT_PUBLIC_BACKEND_URL=https://remitt-backend-production.up.railway.app
+
+npm run dev
 ```
 
-## Running locally
+Then open http://localhost:3000.
 
-```bash
-pnpm install
-pnpm dev        # starts on http://localhost:3000
-```
+**Requirements:**
+- The [Freighter](https://www.freighter.app/) browser extension, set to **testnet**, to deposit liquidity or sign transactions.
+- Testnet USDC in your wallet to provide liquidity (the `/merchants` flow).
 
-The backend must be running at `NEXT_PUBLIC_BACKEND_URL` for the API calls to work.
+## Network Details
 
-```bash
-pnpm build      # production build
-pnpm start      # serve production build
-```
+- **Network:** Stellar testnet
+- **Live app:** https://remitt-web.vercel.app/
+- **Backend API:** https://remitt-backend-production.up.railway.app
+- **Soroban RPC:** https://soroban-testnet.stellar.org
+- **Contract IDs:**
+  - ClearingPool: `CDKHZ4OYHVWLZIDWENIMINAKFWU4APUXL5WNJQ23RYZGN7TKAYRZ4QV5`
+  - AttestationVerifier: `CDHWUO3SGIQ22MN37Q755KOZEDSW4P7N7RKGOCG3GLJXV3MJHQLYOX7B`
+- **Asset issuer:**
+  - USDC (Stellar Asset Contract): `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA`
 
-## Deploying to Vercel
+## Team
 
-1. Connect this repo to a new Vercel project
-2. Framework preset: **Next.js** (auto-detected)
-3. Add environment variable: `NEXT_PUBLIC_BACKEND_URL` → your Railway backend URL
-4. Deploy — Vercel handles the build and CDN
+- Novablitz404 — [@Novablitz404](https://github.com/Novablitz404) (solo builder)
 
-## Tech stack
+## License
 
-| Library | Version | Purpose |
-|---------|---------|---------|
-| Next.js | 16 | App Router, RSC, server actions |
-| React | 19 | UI |
-| Tailwind CSS | 4 | Styling |
-| TypeScript | 5 | Types |
-
-All data fetching uses the native `fetch` API via the typed wrappers in `lib/api.ts`. No additional data-fetching library.
+**Proprietary — All Rights Reserved.** This source is published for hackathon evaluation only. It may **not** be copied, forked, modified, redistributed, or used in any other project. See [LICENSE](./LICENSE).
