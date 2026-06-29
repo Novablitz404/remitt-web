@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { DepositPanel } from "../../components/DepositPanel";
+import { connectWallet, FreighterError } from "../../lib/freighter";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3002";
 
@@ -28,6 +30,15 @@ export default function MerchantsPage() {
     setSelectedRails((prev) =>
       prev.includes(rail) ? prev.filter((r) => r !== rail) : [...prev, rail],
     );
+  }
+
+  async function handleConnectAddress() {
+    setError(null);
+    try {
+      setStellarAddress(await connectWallet());
+    } catch (e) {
+      setError(e instanceof FreighterError ? e.message : "Could not connect wallet");
+    }
   }
 
   function handleRegister() {
@@ -88,6 +99,7 @@ export default function MerchantsPage() {
             Save your LP ID — you'll need it to deposit USDC and start earning.
           </p>
         </div>
+        <DepositPanel initialLpId={result.id} />
         <button
           onClick={() => setResult(null)}
           className="text-sm text-indigo-600 hover:underline"
@@ -128,9 +140,18 @@ export default function MerchantsPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Stellar address
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Stellar address
+            </label>
+            <button
+              type="button"
+              onClick={handleConnectAddress}
+              className="text-xs font-medium text-indigo-600 hover:underline"
+            >
+              Use Freighter
+            </button>
+          </div>
           <input
             type="text"
             placeholder="G..."
@@ -194,6 +215,19 @@ export default function MerchantsPage() {
           {pending ? "Registering…" : "Register as LP"}
         </button>
       </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-gray-50 px-3 text-xs text-gray-400">
+            already registered?
+          </span>
+        </div>
+      </div>
+
+      <DepositPanel />
     </div>
   );
 }

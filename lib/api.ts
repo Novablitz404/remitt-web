@@ -66,6 +66,41 @@ export async function getOrder(id: string): Promise<Order> {
   return request<Order>(`/orders/${id}`);
 }
 
+export interface LpClaim {
+  lpId: string;
+  totalClaim: string;
+  availableClaim: string;
+  reservedClaim: string;
+}
+
+export async function getLpClaim(lpId: string): Promise<LpClaim> {
+  return request<LpClaim>(`/lps/${lpId}/claim`);
+}
+
+// Returns an unsigned, simulation-prepared deposit transaction for the LP to
+// sign in their wallet.
+export async function buildDeposit(
+  lpId: string,
+  amount: string,
+): Promise<{ xdr: string; networkPassphrase: string }> {
+  return request(`/lps/${lpId}/deposit/build`, {
+    method: "POST",
+    body: JSON.stringify({ amount }),
+  });
+}
+
+// Submits the wallet-signed deposit and returns the updated on-chain claim.
+export async function submitDeposit(
+  lpId: string,
+  signedXdr: string,
+  amount: string,
+): Promise<LpClaim> {
+  return request<LpClaim>(`/lps/${lpId}/deposit/submit`, {
+    method: "POST",
+    body: JSON.stringify({ signedXdr, amount }),
+  });
+}
+
 export async function confirmPayIn(
   orderId: string,
   paymentId: string,
