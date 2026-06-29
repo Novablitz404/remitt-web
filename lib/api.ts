@@ -100,9 +100,12 @@ export async function provideLiquidityBuild(params: {
 }
 
 // Step 2: submit the wallet-signed deposit; returns the on-chain position.
+// `amount` (USDC minor units) lets the backend wait out RPC lag when reading
+// the post-deposit balance, so capacity never syncs as a stale 0.
 export async function provideLiquiditySubmit(params: {
   stellarAddress: string;
   signedXdr: string;
+  amount?: string;
 }): Promise<ProvidePosition> {
   return request<ProvidePosition>("/lps/provide/submit", {
     method: "POST",

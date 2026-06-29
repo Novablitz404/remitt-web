@@ -88,6 +88,7 @@ export default function MerchantsPage() {
       const pos = await provideLiquiditySubmit({
         stellarAddress: address,
         signedXdr: signed,
+        amount: amountMinor,
       });
       setPosition(pos);
     } catch (e) {
