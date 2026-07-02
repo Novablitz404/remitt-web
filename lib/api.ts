@@ -4,7 +4,6 @@ export interface FeeSplit {
   receivingLpFee: string;
   payoutLpFee: string;
   platformFee: string;
-  riskReserveFee: string;
 }
 
 export interface Quote {

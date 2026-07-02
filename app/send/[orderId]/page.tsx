@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { getOrder, confirmPayIn, type Order } from "@/lib/api";
 import { formatUSD, formatPHP, STATE_DONE } from "@/lib/format";
@@ -152,9 +153,9 @@ export default function OrderPage({ params }: { params: Promise<{ orderId: strin
           <p className="text-sm text-green-700">
             {formatPHP(order.phpAmountCentavos)} sent to {order.recipientPhone}
           </p>
-          <a href="/send" className="block mt-3 text-sm text-indigo-600 hover:underline">
+          <Link href="/send" className="block mt-3 text-sm text-indigo-600 hover:underline">
             Send another
-          </a>
+          </Link>
         </div>
       )}
 

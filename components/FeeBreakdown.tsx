@@ -5,8 +5,7 @@ export function FeeBreakdown({ feeSplit }: { feeSplit: FeeSplit }) {
   const total =
     BigInt(feeSplit.receivingLpFee) +
     BigInt(feeSplit.payoutLpFee) +
-    BigInt(feeSplit.platformFee) +
-    BigInt(feeSplit.riskReserveFee);
+    BigInt(feeSplit.platformFee);
 
   return (
     <details className="text-sm text-gray-500 mt-2">
@@ -25,10 +24,6 @@ export function FeeBreakdown({ feeSplit }: { feeSplit: FeeSplit }) {
         <li className="flex justify-between">
           <span>Platform fee</span>
           <span>{formatUSDC(feeSplit.platformFee)}</span>
-        </li>
-        <li className="flex justify-between">
-          <span>Risk reserve</span>
-          <span>{formatUSDC(feeSplit.riskReserveFee)}</span>
         </li>
       </ul>
     </details>
