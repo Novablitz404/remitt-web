@@ -42,7 +42,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
+    const err = (body as { error?: unknown }).error;
+    let msg: string;
+    if (typeof err === "string") {
+      msg = err;
+    } else if (err && typeof err === "object") {
+      // e.g. a ZodError { issues: [{ path, message }], name }
+      const issues = (err as { issues?: { path?: unknown[]; message?: string }[] })
+        .issues;
+      msg = issues?.length
+        ? issues
+            .map((i) => `${(i.path ?? []).join(".")}: ${i.message}`)
+            .join("; ")
+        : JSON.stringify(err);
+    } else {
+      msg = `HTTP ${res.status}`;
+    }
+    throw new Error(msg);
   }
   return res.json() as Promise<T>;
 }
@@ -147,6 +163,9 @@ export async function confirmPayIn(
 ): Promise<Order> {
   return request<Order>(`/orders/${orderId}/pay-in-confirm`, {
     method: "POST",
-    body: JSON.stringify({ paymentId, senderHandle }),
+    // US rails (venmo/cashapp/zelle) are still mocked, so there's no real sender
+    // session yet — send a placeholder to satisfy the backend. When those rails
+    // become session-based, this is replaced with the sender's connected session.
+    body: JSON.stringify({ paymentId, senderHandle, sessionId: "mock-us-rail" }),
   });
 }
