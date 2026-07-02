@@ -1,11 +1,21 @@
 import { type FeeSplit } from "@/lib/api";
 import { formatUSDC } from "@/lib/format";
 
-export function FeeBreakdown({ feeSplit }: { feeSplit: FeeSplit }) {
+export function FeeBreakdown({
+  feeSplit,
+  railFeeUsdc,
+}: {
+  feeSplit: FeeSplit;
+  railFeeUsdc?: string;
+}) {
   const total =
     BigInt(feeSplit.receivingLpFee) +
     BigInt(feeSplit.payoutLpFee) +
     BigInt(feeSplit.platformFee);
+
+  // payoutLpFee bundles the rail (delivery) fee; split it out for display.
+  const rail = BigInt(railFeeUsdc ?? "0");
+  const payoutBase = BigInt(feeSplit.payoutLpFee) - rail;
 
   return (
     <details className="text-sm text-gray-500 mt-2">
@@ -19,8 +29,14 @@ export function FeeBreakdown({ feeSplit }: { feeSplit: FeeSplit }) {
         </li>
         <li className="flex justify-between">
           <span>Payout fee</span>
-          <span>{formatUSDC(feeSplit.payoutLpFee)}</span>
+          <span>{formatUSDC(payoutBase.toString())}</span>
         </li>
+        {rail > BigInt(0) && (
+          <li className="flex justify-between">
+            <span>Delivery fee</span>
+            <span>{formatUSDC(rail.toString())}</span>
+          </li>
+        )}
         <li className="flex justify-between">
           <span>Platform fee</span>
           <span>{formatUSDC(feeSplit.platformFee)}</span>

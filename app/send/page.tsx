@@ -183,7 +183,7 @@ export default function SendPage() {
               <span>Exchange rate</span>
               <span>₱{quote.fxRate.toFixed(2)} per USD</span>
             </div>
-            <FeeBreakdown feeSplit={quote.feeSplit} />
+            <FeeBreakdown feeSplit={quote.feeSplit} railFeeUsdc={quote.railFeeUsdc} />
             <div className="text-xs text-gray-400 pt-1">
               Rate locked until {new Date(quote.expiresAt).toLocaleTimeString()}
             </div>

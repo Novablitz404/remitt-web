@@ -15,6 +15,7 @@ export interface Quote {
   fxRate: number;
   payInRail: string;
   feeSplit: FeeSplit;
+  railFeeUsdc?: string; // rail/delivery fee bundled into feeSplit.payoutLpFee
   expiresAt: string;
 }
 
