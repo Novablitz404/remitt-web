@@ -36,7 +36,7 @@ export default function Home() {
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <a
-            href="https://t.me/+YUJ6nrbb4WRhYzFl"
+            href="https://t.me/+2GDOU4IgxQs1YTk1"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 rounded-full bg-accent px-6 py-3 text-base font-semibold text-white shadow-lg shadow-ink/30 transition-colors hover:bg-accent-dark"
