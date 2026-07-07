@@ -19,6 +19,30 @@ export const metadata: Metadata = {
   title: "Remitt — Your dollar account. Anywhere on earth.",
   description:
     "Send, receive, and save US dollars instantly. No bank required. Powered by USDC on Stellar.",
+  // Link-preview card for Messenger/Telegram/WhatsApp/X. On Vercel the
+  // absolute image URL is resolved from the deployment's production domain.
+  openGraph: {
+    title: "Remitt — A better wallet for a better future.",
+    description:
+      "Send, receive, and save US dollars instantly. No bank required.",
+    siteName: "Remitt",
+    type: "website",
+    images: [
+      {
+        url: "/Social.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Remitt — A better wallet for a better future.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Remitt — A better wallet for a better future.",
+    description:
+      "Send, receive, and save US dollars instantly. No bank required.",
+    images: ["/Social.jpg"],
+  },
 };
 
 // TEMPORARY holding-page layout while the site is rebuilt: no header/nav —
